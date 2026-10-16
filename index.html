@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Finishing QI Report · Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7fc;
+            display: flex;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+
+        /* ---------- HEADER ---------- */
+        .top-header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 72px;
+            background-color: #0b1e33;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-bottom: 1px solid #1a324a;
+        }
+        .header-left { display: flex; align-items: center; gap: 14px; }
+        .header-left .logo-img {
+            width: 42px; height: 42px; border-radius: 8px;
+            object-fit: contain; background: white; padding: 3px;
+        }
+        .header-left .title-block h1 {
+            font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2;
+        }
+        .header-left .title-block .subtitle {
+            font-size: 0.7rem; color: #b0c9e8; letter-spacing: 0.3px; font-weight: 400;
+        }
+        .header-right { display: flex; align-items: center; gap: 24px; }
+        .header-date {
+            font-size: 0.85rem; background: rgba(255,255,255,0.08);
+            padding: 8px 16px; border-radius: 40px; font-weight: 500; color: #d9e9ff;
+        }
+        .user-profile {
+            display: flex; align-items: center; gap: 12px; cursor: pointer;
+            padding: 6px 10px 6px 14px; border-radius: 40px;
+            background: rgba(255,255,255,0.04); transition: background 0.2s;
+        }
+        .user-profile:hover { background: rgba(255,255,255,0.12); }
+        .user-avatar-img {
+            width: 42px; height: 42px; border-radius: 50%;
+            object-fit: cover; border: 2px solid #4b7bb5;
+        }
+        .user-info { line-height: 1.3; }
+        .user-info .name { font-weight: 600; font-size: 0.85rem; }
+        .user-info .role { font-size: 0.65rem; color: #96b8e0; letter-spacing: 0.2px; }
+        .dropdown-arrow { font-size: 0.7rem; color: #a0bada; margin-left: 6px; }
+
+        /* ---------- SIDEBAR ---------- */
+        .sidebar {
+            position: fixed; top: 72px; left: 0; bottom: 0; width: 260px;
+            background-color: #0f263d; color: #e0edff;
+            padding: 28px 0 20px 0; overflow-y: auto;
+            display: flex; flex-direction: column; justify-content: space-between;
+            border-right: 1px solid #1e3a57; z-index: 900;
+            box-shadow: 4px 0 12px rgba(0,0,0,0.02);
+        }
+        .sidebar-menu { list-style: none; padding: 0 12px; }
+        .sidebar-menu li {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px 18px; margin: 4px 0; border-radius: 10px;
+            font-size: 0.92rem; font-weight: 500; color: #b6cee8;
+            cursor: pointer; transition: all 0.18s ease;
+            letter-spacing: 0.2px; border-left: 3px solid transparent;
+        }
+        .sidebar-menu li i { width: 22px; font-size: 1.05rem; color: #7d9fc7; transition: color 0.18s; }
+        .sidebar-menu li:hover { background-color: #1c3551; color: white; border-left-color: #4d8fd6; }
+        .sidebar-menu li:hover i { color: #9bc3f0; }
+        .sidebar-menu li.active {
+            background-color: #1e3b5c; color: white; border-left-color: #3e8be0;
+            box-shadow: inset 0 0 0 1px rgba(86,147,219,0.2);
+        }
+        .sidebar-menu li.active i { color: #6ab0f3; }
+
+        .sidebar-info {
+            margin: 28px 18px 10px 18px; background: #122b44;
+            padding: 18px 16px; border-radius: 14px;
+            border: 1px solid #1f3c5c; text-align: center;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .sidebar-info .label {
+            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.8px;
+            color: #86a9d0; font-weight: 600;
+        }
+        .sidebar-info .target-value {
+            font-size: 1.8rem; font-weight: 700; color: #6fe0a8;
+            line-height: 1.2; margin: 6px 0 4px;
+        }
+        .sidebar-info .message {
+            font-size: 0.72rem; color: #b2cef0; font-style: italic;
+            margin-top: 10px; border-top: 1px dashed #2e4d70;
+            padding-top: 10px; font-weight: 400;
+        }
+
+        /* ---------- MAIN ---------- */
+        .main-content {
+            margin-left: 260px; margin-top: 72px;
+            padding: 28px 32px 40px;
+            width: calc(100% - 260px); min-height: calc(100vh - 72px);
+            background-color: #f4f7fc;
+        }
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(105deg, #0a2038 0%, #1d3f61 60%, #1b4972 100%);
+            border-radius: 24px; padding: 36px 40px; color: white;
+            display: flex; flex-wrap: wrap; justify-content: space-between;
+            align-items: center; margin-bottom: 32px;
+            box-shadow: 0 12px 30px rgba(0,20,50,0.2);
+            border: 1px solid #254a6e; position: relative; overflow: hidden;
+        }
+        .hero::after {
+            content: "\f0d1"; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; right: 40px; bottom: -10px; font-size: 140px;
+            color: rgba(255,255,255,0.03); pointer-events: none; transform: rotate(-5deg);
+        }
+        .hero-text h2 {
+            font-size: 2.1rem; font-weight: 700;
+            letter-spacing: -0.02em; margin-bottom: 6px;
+        }
+        .hero-text p { font-size: 1rem; color: #c6ddf5; font-weight: 400; }
+        .hero-meta {
+            display: flex; gap: 48px;
+            background: rgba(0,0,0,0.25); backdrop-filter: blur(4px);
+            padding: 18px 32px; border-radius: 80px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .hero-meta-item { text-align: center; }
+        .hero-meta-item .label {
+            font-size: 0.65rem; text-transform: uppercase;
+            letter-spacing: 0.8px; color: #9bb9db; font-weight: 600;
+        }
+        .hero-meta-item .value {
+            font-size: 1.2rem; font-weight: 700; color: white; line-height: 1.3;
+        }
+
+        /* KPI CARDS */
+        .kpi-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 24px; margin-bottom: 32px;
+        }
+        .kpi-card {
+            background: white; padding: 22px 24px; border-radius: 18px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+            border: 1px solid #e9eef5;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .kpi-card:hover { box-shadow: 0 12px 28px rgba(0,0,0,0.06); transform: translateY(-2px); }
+        .kpi-label {
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;
+            font-weight: 600; color: #6b7f96; display: flex; align-items: center; gap: 6px;
+        }
+        .kpi-value { font-size: 2.3rem; font-weight: 700; line-height: 1.2; margin: 8px 0 6px; color: #0a1e33; }
+        .kpi-sub { font-size: 0.8rem; color: #657e99; display: flex; align-items: center; gap: 8px; }
+        .kpi-sub .badge {
+            background: #eff6ff; padding: 2px 10px; border-radius: 40px;
+            font-weight: 600; font-size: 0.7rem;
+        }
+        .kpi-card.total .kpi-value { color: #1d4ed8; }
+        .kpi-card.good .kpi-value { color: #0f7b4e; }
+        .kpi-card.warning .kpi-value { color: #c26b0a; }
+        .kpi-card.critical .kpi-value { color: #b91c1c; }
+
+        /* two columns */
+        .two-columns {
+            display: grid; grid-template-columns: 1fr 360px;
+            gap: 28px; margin-bottom: 32px;
+        }
+        .card {
+            background: white; border-radius: 20px;
+            padding: 22px 24px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.02);
+            border: 1px solid #e9eef5;
+        }
+        .card-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 20px;
+        }
+        .card-header h3 {
+            font-weight: 600; font-size: 1.15rem;
+            color: #122b44; letter-spacing: -0.01em;
+        }
+        .card-header .badge-date {
+            background: #eef4fb; padding: 6px 16px; border-radius: 40px;
+            font-size: 0.7rem; font-weight: 600; color: #366092;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th {
+            text-align: left; padding: 14px 8px 10px 8px;
+            font-weight: 600; color: #53718f; font-size: 0.7rem;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            border-bottom: 1px solid #dfe8f2;
+        }
+        td {
+            padding: 14px 8px; border-bottom: 1px solid #edf2f9;
+            font-weight: 500; color: #1f3449;
+        }
+        tr:last-child td { border-bottom: none; }
+        .status-badge {
+            display: inline-block; padding: 4px 14px; border-radius: 40px;
+            font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2px;
+            background: #e8f5e9; color: #1b6b3f;
+        }
+        .status-badge.over { background: #fee9e7; color: #b1382b; }
+        .status-badge.under { background: #e3f2e9; color: #146b3a; }
+
+        /* QUICK ACTIONS */
+        .quick-actions-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 12px; margin-top: 10px;
+        }
+        .quick-btn {
+            background: #f7faff; border: 1px solid #dde6f0;
+            border-radius: 14px; padding: 16px 10px;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 10px;
+            font-size: 0.7rem; font-weight: 600; color: #1d3b5c;
+            cursor: pointer; transition: all 0.18s ease; text-align: center;
+        }
+        .quick-btn i { font-size: 1.5rem; color: #31679e; }
+        .quick-btn:hover {
+            background: #e1edfe; border-color: #b7d1f0;
+            transform: translateY(-2px); box-shadow: 0 8px 14px rgba(0,65,140,0.08);
+        }
+
+        /* ACTIVITY */
+        .activity-list { list-style: none; margin-top: 8px; }
+        .activity-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px 0; border-bottom: 1px solid #edf2f9;
+            font-size: 0.85rem; color: #23415e;
+        }
+        .activity-item:last-child { border-bottom: none; }
+        .dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #3e8be0; flex-shrink: 0;
+        }
+        .dot.green { background: #2e9b5e; }
+        .dot.orange { background: #e08d2e; }
+        .dot.red { background: #d44c3c; }
+        .dot.blue { background: #3e8be0; }
+        .activity-text { flex: 1; }
+        .activity-time { font-size: 0.65rem; color: #8aa3bd; font-weight: 500; white-space: nowrap; }
+
+        /* ---------- DAILY REPORT ---------- */
+        .report-input-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px; margin-bottom: 25px;
+        }
+        .lot-input-group {
+            display: flex; align-items: center;
+            background: #f8f9fa; padding: 8px 12px;
+            border-radius: 6px; border: 1px solid #ddd; position: relative;
+        }
+        .lot-label { font-weight: 600; min-width: 65px; font-size: 0.85rem; }
+        .percent-input, .uncut-input {
+            width: 55px; padding: 6px; border: 1px solid #ccc;
+            border-radius: 4px; text-align: center; margin: 0 4px;
+            font-weight: 600; font-size: 0.85rem;
+        }
+        .uncut-input { background-color: #fffbf0; border-color: #f39c12; }
+        .indicator { font-size: 1.1rem; margin-left: 8px; }
+        .green { color: #27ae60; }
+        .yellow { color: #f39c12; }
+        .red { color: #e74c3c; }
+
+        .high-risk-section {
+            background: #fff4f4; border: 1px solid #ffd1d1;
+            border-radius: 8px; padding: 20px; margin: 20px 0;
+        }
+        .high-risk-title { color: #e74c3c; margin-bottom: 12px; font-size: 1rem; }
+        .high-risk-list {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .high-risk-item {
+            background: #ffebeb; padding: 8px 12px;
+            border-radius: 6px; font-weight: 500; font-size: 0.85rem;
+        }
+        .action-note {
+            background: #e8f4fc; border-left: 5px solid #3498db;
+            padding: 18px; border-radius: 4px; margin: 25px 0;
+        }
+        .action-title { font-weight: 600; margin-bottom: 8px; color: #2c3e50; }
+
+        .buttons { display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
+        .btn {
+            padding: 12px 25px; border: none; border-radius: 6px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+            display: flex; align-items: center; gap: 8px; font-size: 0.85rem;
+        }
+        .btn-update { background: #3498db; color: white; }
+        .btn-update:hover { background: #2980b9; }
+        .btn-copy { background: #27ae60; color: white; }
+        .btn-copy:hover { background: #219653; }
+        .btn-paste { background: #9b59b6; color: white; }
+        .btn-paste:hover { background: #8e44ad; }
+        .btn-uncut { background: #f39c12; color: white; }
+        .btn-uncut:hover { background: #d68910; }
+        .btn-history { background: #8e44ad; color: white; }
+        .btn-history:hover { background: #71368a; }
+        .btn-save { background: #27ae60; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 15px; }
+        .btn-backup { background: #16a085; color: white; }
+        .btn-backup:hover { background: #12876f; }
+
+        /* Settings */
+        .settings-panel {
+            background: #f8f9fa; border: 1px solid #ddd;
+            border-radius: 8px; padding: 20px; margin: 20px 0;
+        }
+        .settings-title { color: #2c3e50; margin-bottom: 15px; font-size: 1rem; }
+        .threshold-controls {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px; margin-bottom: 15px;
+        }
+        .threshold-control { display: flex; flex-direction: column; }
+        .threshold-control label { font-weight: 600; margin-bottom: 5px; font-size: 0.85rem; }
+        .threshold-control input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .text-controls { margin: 20px 0; }
+        .text-control { margin-bottom: 15px; }
+        .text-control label { font-weight: 600; font-size: 0.85rem; }
+        .text-control textarea, .text-control input[type="text"] {
+            width: 100%; padding: 10px; border: 1px solid #ddd;
+            border-radius: 4px; min-height: 40px; resize: vertical; font-size: 0.85rem;
+        }
+        .lot-management { margin: 20px 0; border-top: 1px solid #ddd; padding-top: 20px; }
+        .lot-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        .lot-controls input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex: 1; }
+        .lot-list { max-height: 250px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px; }
+        .lot-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
+        .lot-item:last-child { border-bottom: none; }
+        .lot-item input[type="text"] { border: 1px solid transparent; background: transparent; font-weight: 500; padding: 4px; width: 60%; }
+        .lot-item input[type="text"]:focus { border-color: #3498db; background: white; }
+        .lot-item-buttons { display: flex; gap: 5px; }
+        .lot-item-btn { background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px; }
+        .lot-item-btn.restore { background: #27ae60; }
+
+        /* modals */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.7);
+            z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 10px;
+            width: 90%; max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;
+        }
+        .modal-title { text-align: center; margin-bottom: 20px; color: #2c3e50; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 10px; border: 1px solid #ddd;
+            border-radius: 4px; font-size: 16px;
+        }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .modal-buttons { display: flex; justify-content: space-between; gap: 10px; }
+        .modal-btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .btn-login { background: #3498db; color: white; flex: 1; }
+        .btn-cancel { background: #e74c3c; color: white; }
+
+        .copy-notification {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #27ae60; color: white; padding: 12px 25px;
+            border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0; transition: opacity 0.3s; z-index: 1200;
+        }
+        .copy-notification.show { opacity: 1; }
+
+        .history-modal {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.7);
+            z-index: 1100; align-items: center; justify-content: center;
+        }
+        .history-modal-content {
+            background: white; padding: 25px; border-radius: 10px;
+            width: 95%; max-width: 900px; max-height: 90vh;
+            overflow-y: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        .history-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .history-list { display: flex; flex-direction: column; gap: 12px; }
+        .history-item { border: 1px solid #ddd; border-radius: 8px; padding: 14px; background: #f8f9fa; }
+        .history-date { font-weight: 700; color: #2c3e50; margin-bottom: 8px; }
+        .history-summary { font-size: 0.92rem; color: #555; margin-bottom: 8px; }
+        .history-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .history-action-btn { border: none; border-radius: 4px; padding: 7px 12px; cursor: pointer; font-weight: 600; }
+        .history-view { background: #3498db; color: white; }
+        .history-close { background: #e74c3c; color: white; }
+        .history-delete { background: #c0392b; color: white; }
+        .history-detail { display: none; margin-top: 15px; padding: 15px; background: #fff; border: 1px solid #ddd; border-radius: 6px; white-space: pre-wrap; font-family: monospace; font-size: 0.9rem; }
+
+        /* charts */
+        .charts-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 28px; margin-bottom: 28px;
+        }
+        .chart-card {
+            background: white; border-radius: 20px;
+            padding: 22px 24px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.02);
+            border: 1px solid #e9eef5;
+        }
+        .chart-card h3 { font-weight: 600; font-size: 1rem; color: #122b44; margin-bottom: 16px; }
+        canvas { max-height: 280px; width: 100% !important; }
+
+        /* summary rows */
+        .summary-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .summary-box {
+            background: white; border-radius: 16px;
+            padding: 20px 24px;
+            border: 1px solid #e9eef5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+        .summary-box .title {
+            font-size: 0.7rem; text-transform: uppercase;
+            letter-spacing: 0.8px; color: #6b7f96;
+            font-weight: 700; margin-bottom: 12px;
+        }
+        .summary-box .metrics {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .summary-metric {
+            flex: 1;
+            min-width: 120px;
+        }
+        .summary-metric .label {
+            font-size: 0.7rem;
+            color: #8aa3bd;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .summary-metric .value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0a1e33;
+            line-height: 1.2;
+            margin-top: 4px;
+        }
+        .summary-metric .value.defect { color: #1d4ed8; }
+        .summary-metric .value.uncut { color: #c26b0a; }
+
+        /* month selector */
+        .month-selector-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            background: white;
+            padding: 14px 20px;
+            border-radius: 14px;
+            border: 1px solid #e9eef5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+        .month-selector-bar label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #2c3e50;
+        }
+        .month-selector-bar select {
+            padding: 8px 14px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1d3b5c;
+            background: #f8faff;
+            cursor: pointer;
+            min-width: 180px;
+        }
+        .month-selector-bar select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.15);
+        }
+
+        @media (max-width: 1366px) {
+            .main-content { padding: 22px 24px; }
+            .kpi-value { font-size: 2rem; }
+            .hero-text h2 { font-size: 1.8rem; }
+            .hero-meta { gap: 28px; padding: 14px 24px; }
+            .two-columns { grid-template-columns: 1fr 320px; }
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 1100px) {
+            .two-columns { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .summary-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+            .hero-meta { flex-direction: column; gap: 12px; }
+        }
+        .text-muted { color: #6c839c; }
+        .mt-2 { margin-top: 10px; }
+        .mb-2 { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+        <div class="header-left">
+            <img src="Colossus.jpeg" alt="Logo" class="logo-img" onerror="this.style.display='none'">
+            <div class="title-block">
+                <h1>Daily Finishing QI Report</h1>
+                <div class="subtitle">Colossus Apparel Limited · Quality | Accuracy | Better Tomorrow</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="header-date" id="currentDateDisplay">--</div>
+            <div class="user-profile" id="userProfileBtn">
+                <img src="Rabbi.png" alt="Rabbi" class="user-avatar-img" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MiIgaGVpZ2h0PSI0MiI+PGNpcmNsZSBjeD0iMjEiIGN5PSIxNSIgcj0iOCIgZmlsbD0iIzhhYWVjYyIvPjxjaXJjbGUgY3g9IjIxIiBjeT0iMzUiIHI9IjEyIiBmaWxsPSIjOGFhZWNjIi8+PC9zdmc+'">
+                <div class="user-info">
+                    <div class="name">Fazle Rabbi (拉比)</div>
+                    <div class="role">Quality Reporter</div>
+                </div>
+                <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </div>
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <ul class="sidebar-menu" id="sidebarMenu">
+            <li data-page="home" class="active"><i class="fas fa-home"></i> Home</li>
+            <li data-page="dailyReport"><i class="fas fa-clipboard-list"></i> Daily Report</li>
+            <li data-page="lotEntry"><i class="fas fa-pen-to-square"></i> Lot Entry</li>
+            <li data-page="viewReport"><i class="fas fa-file-lines"></i> View Report</li>
+            <li data-page="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</li>
+            <li data-page="charts"><i class="fas fa-chart-line"></i> Charts & Analysis</li>
+            <li data-page="pdfReport"><i class="fas fa-file-pdf"></i> A4 PDF Report</li>
+            <li data-page="settings"><i class="fas fa-gear"></i> Settings</li>
+        </ul>
+        <div class="sidebar-info">
+            <div class="label">Target Finishing Defects</div>
+            <div class="target-value" id="sidebarTargetValue">&lt; 2.50%</div>
+            <div class="message">Good Quality Builds Customer Trust</div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <!-- ========== HOME ========== -->
+        <section id="page-home" class="page-section active">
+            <div class="hero">
+                <div class="hero-text">
+                    <h2>Daily Finishing QI Report</h2>
+                    <p>Monthly / Weekly / Daily Quality Performance Monitoring</p>
+                </div>
+                <div class="hero-meta">
+                    <div class="hero-meta-item">
+                        <div class="label">Month</div>
+                        <div class="value" id="heroMonth">--</div>
+                    </div>
+                    <div class="hero-meta-item">
+                        <div class="label">Factory</div>
+                        <div class="value">Colossus Apparel Ltd.</div>
+                    </div>
+                    <div class="hero-meta-item">
+                        <div class="label">Target Defects</div>
+                        <div class="value"><i class="fas fa-bullseye"></i> &lt; 2.50%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-row">
+                <div class="summary-box">
+                    <div class="title"><i class="fas fa-calendar-alt"></i> Monthly Average</div>
+                    <div class="metrics">
+                        <div class="summary-metric">
+                            <div class="label">Defect %</div>
+                            <div class="value defect" id="monthlyAvgDefect">--</div>
+                        </div>
+                        <div class="summary-metric">
+                            <div class="label">Uncut Thread %</div>
+                            <div class="value uncut" id="monthlyAvgUncut">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="summary-box">
+                    <div class="title"><i class="fas fa-calendar-week"></i> Last 7 Days Average</div>
+                    <div class="metrics">
+                        <div class="summary-metric">
+                            <div class="label">Defect %</div>
+                            <div class="value defect" id="weeklyAvgDefect">--</div>
+                        </div>
+                        <div class="summary-metric">
+                            <div class="label">Uncut Thread %</div>
+                            <div class="value uncut" id="weeklyAvgUncut">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-row">
+                <div class="summary-box">
+                    <div class="title"><i class="fas fa-calendar-day"></i> Yesterday</div>
+                    <div class="metrics">
+                        <div class="summary-metric">
+                            <div class="label">Defect %</div>
+                            <div class="value defect" id="yesterdayAvgDefect">--</div>
+                        </div>
+                        <div class="summary-metric">
+                            <div class="label">Uncut Thread %</div>
+                            <div class="value uncut" id="yesterdayAvgUncut">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="summary-box">
+                    <div class="title"><i class="fas fa-sun"></i> Today</div>
+                    <div class="metrics">
+                        <div class="summary-metric">
+                            <div class="label">Defect %</div>
+                            <div class="value defect" id="todayAvgDefect">--</div>
+                        </div>
+                        <div class="summary-metric">
+                            <div class="label">Uncut Thread %</div>
+                            <div class="value uncut" id="todayAvgUncut">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-grid" id="kpiContainer"></div>
+
+            <div class="two-columns">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-table" style="margin-right: 10px; color: #2b5f9e;"></i>Lot Performance (Today)</h3>
+                        <span class="badge-date" id="lotTableDate"><i class="far fa-calendar-alt"></i> --</span>
+                    </div>
+                    <table id="lotTable">
+                        <thead>
+                            <tr>
+                                <th>Lot No.</th>
+                                <th>Defect %</th>
+                                <th>Uncut Thread %</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lotTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-bolt" style="margin-right: 8px; color: #e6a017;"></i>Quick Actions</h3>
+                        </div>
+                        <div class="quick-actions-grid">
+                            <div class="quick-btn" onclick="navigateTo('dailyReport')"><i class="fas fa-plus-circle"></i> New Report</div>
+                            <div class="quick-btn" onclick="navigateTo('viewReport')"><i class="fas fa-eye"></i> View Report</div>
+                            <div class="quick-btn" onclick="navigateTo('charts')"><i class="fas fa-chart-simple"></i> Charts</div>
+                            <div class="quick-btn" onclick="navigateTo('pdfReport')"><i class="fas fa-file-pdf"></i> A4 PDF</div>
+                            <div class="quick-btn" onclick="navigateTo('settings')"><i class="fas fa-sliders"></i> Settings</div>
+                            <div class="quick-btn" onclick="openHistoryFromHome()"><i class="fas fa-history"></i> History</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-clock-rotate-left" style="margin-right: 8px; color: #4b7bb5;"></i>Recent Activity</h3>
+                        </div>
+                        <ul class="activity-list" id="activityList"></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== DAILY REPORT ========== -->
+        <section id="page-dailyReport" class="page-section">
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <h3><i class="fas fa-clipboard-list" style="margin-right: 10px; color: #2b5f9e;"></i>Daily Finishing QI Report – Data Entry</h3>
+                    <span class="badge-date" id="dailyReportDate"><i class="far fa-calendar-alt"></i> --</span>
+                </div>
+                <div class="lot-entry-hint" style="background:#f8f9fa; border:1px solid #ddd; border-radius:6px; padding:10px 12px; margin-bottom:15px; color:#555; font-size:0.9rem;">
+                    📦 Enter report data by <strong>Lot</strong> instead of Line. <em>Daily Report will be added to the running month automatically.</em>
+                </div>
+
+                <h2 class="section-title" style="font-size:1.1rem; margin-bottom:12px; color:#2c3e50;">Quality Performance by Lot (Defect %):</h2>
+                <div class="report-input-grid" id="lots-container"></div>
+
+                <div class="high-risk-section">
+                    <h3 class="high-risk-title"><i class="fas fa-exclamation-circle"></i> High-Risk Lots (Defect ≥<span id="highRiskValue">16</span>%):</h3>
+                    <div class="high-risk-list" id="high-risk-container"></div>
+                </div>
+
+                <div class="action-note">
+                    <div class="action-title"><i class="fas fa-clipboard-list"></i> Action Note:</div>
+                    <p id="actionNoteText">--</p>
+                </div>
+
+                <div class="buttons">
+                    <button class="btn btn-update" id="update-btn"><i class="fas fa-sync-alt"></i> Update Report</button>
+                    <button class="btn btn-paste" id="paste-btn"><i class="fas fa-paste"></i> Paste from Excel</button>
+                    <button class="btn btn-uncut" id="uncut-btn"><i class="fas fa-cut"></i> Paste Uncut Thread %</button>
+                    <button class="btn btn-copy" id="copy-btn"><i class="fas fa-copy"></i> Copy Report</button>
+                    <button class="btn btn-history" id="history-btn"><i class="fas fa-history"></i> History</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== LOT ENTRY ========== -->
+        <section id="page-lotEntry" class="page-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-pen-to-square" style="margin-right: 10px; color: #2b5f9e;"></i>Lot Entry</h3>
+                    <span class="badge-date"><i class="fas fa-info-circle"></i> Soft Delete – Monthly totals unchanged</span>
+                </div>
+                <p class="text-muted mb-2">Add new lots or temporarily remove lots from daily entry. <strong>Removed lots still count in Monthly Defect totals.</strong> Only Admin can permanently delete from Settings.</p>
+                <div class="lot-controls" style="margin-bottom:20px;">
+                    <input type="text" id="newLotNameEntry" placeholder="Enter new lot name (e.g., 8035)">
+                    <button class="btn-save" id="addLotEntryBtn" style="margin-top:0;"><i class="fas fa-plus"></i> Add Lot</button>
+                </div>
+                <div id="lotEntryListContainer" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:12px;"></div>
+                <div class="buttons" style="margin-top:20px;">
+                    <button class="btn btn-update" id="lotEntryToDailyReportBtn"><i class="fas fa-arrow-right"></i> Go to Daily Report Entry</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== VIEW REPORT ========== -->
+        <section id="page-viewReport" class="page-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-file-lines" style="margin-right: 10px; color: #2b5f9e;"></i>View Report</h3>
+                    <button class="btn btn-copy" id="viewReportCopyBtn" style="padding:8px 18px;"><i class="fas fa-copy"></i> Copy Report</button>
+                </div>
+                <pre id="viewReportContent" style="white-space: pre-wrap; font-family: 'Segoe UI', monospace; font-size:0.9rem; background:#f8f9fa; padding:20px; border-radius:10px; border:1px solid #e9eef5; line-height:1.6;"></pre>
+            </div>
+        </section>
+
+        <!-- ========== DASHBOARD (with Month Selector) ========== -->
+        <section id="page-dashboard" class="page-section">
+            <!-- Month selector bar -->
+            <div class="month-selector-bar">
+                <label for="monthSelector"><i class="fas fa-calendar-alt" style="color:#3498db;"></i> Select Month:</label>
+                <select id="monthSelector"></select>
+                <span class="text-muted" style="font-size:0.8rem; margin-left:auto;"><i class="fas fa-info-circle"></i> View any past month's averages</span>
+            </div>
+
+            <!-- Current / selected month summary -->
+            <div class="summary-row" style="margin-bottom:24px;">
+                <div class="summary-box">
+                    <div class="title"><i class="fas fa-calendar-alt"></i> <span id="dashMonthLabel">Monthly Average</span></div>
+                    <div class="metrics">
+                        <div class="summary-metric">
+                            <div class="label">Defect %</div>
+                            <div class="value defect" id="dashMonthlyDefect">--</div>
+                        </div>
+                        <div class="summary-metric">
+                            <div class="label">Uncut Thread %</div>
+                            <div class="value uncut" id="dashMonthlyUncut">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="summary-box">
+                    <div class="title"><i class="fas fa-calendar-week"></i> Last 7 Days Average</div>
+                    <div class="metrics">
+                        <div class="summary-metric">
+                            <div class="label">Defect %</div>
+                            <div class="value defect" id="dashWeeklyDefect">--</div>
+                        </div>
+                        <div class="summary-metric">
+                            <div class="label">Uncut Thread %</div>
+                            <div class="value uncut" id="dashWeeklyUncut">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="summary-row" style="margin-bottom:24px;">
+                <div class="summary-box">
+                    <div class="title"><i class="fas fa-calendar-day"></i> Yesterday</div>
+                    <div class="metrics">
+                        <div class="summary-metric">
+                            <div class="label">Defect %</div>
+                            <div class="value defect" id="dashYesterdayDefect">--</div>
+                        </div>
+                        <div class="summary-metric">
+                            <div class="label">Uncut Thread %</div>
+                            <div class="value uncut" id="dashYesterdayUncut">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="summary-box">
+                    <div class="title"><i class="fas fa-sun"></i> Today</div>
+                    <div class="metrics">
+                        <div class="summary-metric">
+                            <div class="label">Defect %</div>
+                            <div class="value defect" id="dashTodayDefect">--</div>
+                        </div>
+                        <div class="summary-metric">
+                            <div class="label">Uncut Thread %</div>
+                            <div class="value uncut" id="dashTodayUncut">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom:24px;">
+                <div class="card-header">
+                    <h3><i class="fas fa-chart-pie" style="margin-right: 10px; color: #2b5f9e;"></i>Dashboard KPI – <span id="dashKpiMonth">Selected Month</span></h3>
+                </div>
+                <div class="kpi-grid" id="dashboardKpiContainer" style="margin-bottom:0;"></div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-list" style="margin-right: 10px; color: #2b5f9e;"></i>All Lots Summary – Monthly Averages (<span id="dashTableMonth">Selected Month</span>)</h3>
+                </div>
+                <table>
+                    <thead>
+                        <tr><th>Lot No.</th><th>Avg Defect %</th><th>Avg Uncut Thread %</th><th>Status</th></tr>
+                    </thead>
+                    <tbody id="dashboardTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ========== CHARTS ========== -->
+        <section id="page-charts" class="page-section">
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-bar" style="color:#2b5f9e; margin-right:8px;"></i>Daily Report – Defect % by Lot</h3>
+                    <canvas id="barChartDaily"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-pie" style="color:#2b5f9e; margin-right:8px;"></i>Daily Status Distribution</h3>
+                    <canvas id="pieChartDaily"></canvas>
+                </div>
+            </div>
+            <div class="charts-grid" style="margin-top:0;">
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-bar" style="color:#2b5f9e; margin-right:8px;"></i>Monthly Report – Avg Defect % by Lot</h3>
+                    <canvas id="barChartMonthly"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-pie" style="color:#2b5f9e; margin-right:8px;"></i>Monthly Status Distribution</h3>
+                    <canvas id="pieChartMonthly"></canvas>
+                </div>
+            </div>
+            <div class="chart-card" style="margin-top:0;">
+                <h3><i class="fas fa-chart-line" style="color:#2b5f9e; margin-right:8px;"></i>Monthly Avg Uncut Thread % by Lot</h3>
+                <canvas id="lineChartMonthly"></canvas>
+            </div>
+        </section>
+
+        <!-- ========== A4 PDF ========== -->
+        <section id="page-pdfReport" class="page-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-file-pdf" style="margin-right: 10px; color: #b91c1c;"></i>A4 Printable Report</h3>
+                    <button class="btn btn-copy" onclick="window.print()" style="padding:8px 18px;"><i class="fas fa-print"></i> Print / Save PDF</button>
+                </div>
+                <div id="a4ReportContent" style="padding:20px; background:white; border:1px solid #ddd; border-radius:8px; max-width:800px; margin:0 auto;"></div>
+            </div>
+        </section>
+
+        <!-- ========== SETTINGS ========== -->
+        <section id="page-settings" class="page-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-gear" style="margin-right: 10px; color: #2b5f9e;"></i>Admin Settings</h3>
+                </div>
+                <div id="settingsLoginPrompt" style="text-align:center; padding:40px;">
+                    <i class="fas fa-lock" style="font-size:3rem; color:#8aa3bd; margin-bottom:16px;"></i>
+                    <h3 style="margin-bottom:10px; color:#2c3e50;">Admin Login Required</h3>
+                    <p class="text-muted mb-2">Please log in to change thresholds, manage lots, status texts, and customize reports.</p>
+                    <button class="btn btn-update" id="settingsLoginBtn" style="margin:0 auto;"><i class="fas fa-lock"></i> Admin Login</button>
+                </div>
+
+                <div id="settingsContent" style="display:none;">
+                    <h3 class="settings-title"><i class="fas fa-cog"></i> Defect Threshold Settings</h3>
+                    <div class="threshold-controls">
+                        <div class="threshold-control">
+                            <label for="greenThreshold">Green (🟢) Max %:</label>
+                            <input type="number" id="greenThreshold" min="0" max="100" value="8">
+                        </div>
+                        <div class="threshold-control">
+                            <label for="yellowThreshold">Yellow (🟡) Max %:</label>
+                            <input type="number" id="yellowThreshold" min="0" max="100" value="15">
+                        </div>
+                        <div class="threshold-control">
+                            <label for="redThreshold">Red (🔴) Min %:</label>
+                            <input type="number" id="redThreshold" min="0" max="100" value="16">
+                        </div>
+                        <div class="threshold-control">
+                            <label for="highRiskThreshold">High-Risk Min %:</label>
+                            <input type="number" id="highRiskThreshold" min="0" max="100" value="16">
+                        </div>
+                    </div>
+
+                    <div class="text-controls">
+                        <h3 class="settings-title"><i class="fas fa-font"></i> Status Text / Symbol Customization</h3>
+                        <div class="text-control">
+                            <label for="statusUnderText">Under Target Status Text / Symbol:</label>
+                            <input type="text" id="statusUnderText" value="✅ Under Target">
+                        </div>
+                        <div class="text-control">
+                            <label for="statusOverText">Over Target Status Text / Symbol:</label>
+                            <input type="text" id="statusOverText" value="❌ Over Target">
+                        </div>
+                        <div class="text-control">
+                            <label for="targetMessage">Target Message:</label>
+                            <textarea id="targetMessage">Finishing Defects Target 2.50% Below</textarea>
+                        </div>
+                        <div class="text-control">
+                            <label for="actionNote">Action Note:</label>
+                            <textarea id="actionNote">The acceptable defect percentage is below 10%. Necessary corrective measures must be taken promptly to improve the overall quality performance, especially for high-risk lots.</textarea>
+                        </div>
+                    </div>
+
+                    <div class="lot-management">
+                        <h3 class="settings-title"><i class="fas fa-list"></i> Lot Management (Permanent Delete)</h3>
+                        <p class="text-muted" style="font-size:0.8rem; margin-bottom:10px;">Permanently delete lots here. This will reduce Monthly Defect totals. Soft-deleted lots appear in green and can be restored.</p>
+                        <div class="lot-controls">
+                            <input type="text" id="newLotName" placeholder="Enter new lot name">
+                            <button class="btn-save" id="addLotBtn">Add Lot</button>
+                        </div>
+                        <div class="lot-list" id="lotList"></div>
+                    </div>
+
+                    <button class="btn-save" id="saveAllBtn"><i class="fas fa-save"></i> Save All Settings</button>
+                    <button class="btn btn-backup" id="backupBtn" style="margin-top:15px;"><i class="fas fa-download"></i> Backup All Data (.json)</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODALS -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h2 class="modal-title">Admin Login</h2>
+            <div class="form-group">
+                <label for="username">User ID:</label>
+                <input type="text" id="username" placeholder="Enter admin user ID">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" placeholder="Enter password">
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-login" id="loginBtn">Login</button>
+                <button class="modal-btn btn-cancel" id="cancelLoginBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="pasteModal">
+        <div class="modal-content">
+            <h2 class="modal-title">Paste Percentages from Excel</h2>
+            <div class="form-group">
+                <textarea id="pasteArea" placeholder="Paste your percentages here (from Excel)" rows="10"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-login" id="pasteApplyBtn">Apply to Lots</button>
+                <button class="modal-btn btn-cancel" id="pasteCancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="uncutPasteModal">
+        <div class="modal-content">
+            <h2 class="modal-title">Paste Uncut Thread Percentages</h2>
+            <div class="form-group">
+                <textarea id="uncutPasteArea" placeholder="Paste your uncut thread percentages here" rows="10"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-login" id="uncutPasteApplyBtn">Apply to Lots</button>
+                <button class="modal-btn btn-cancel" id="uncutPasteCancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-modal" id="historyModal">
+        <div class="history-modal-content">
+            <div class="history-header">
+                <h2 class="modal-title" style="margin-bottom:0;"><i class="fas fa-history"></i> Finishing Report History</h2>
+                <button class="history-action-btn history-close" id="historyCloseBtn">Close</button>
+            </div>
+            <div id="historyList" class="history-list"></div>
+        </div>
+    </div>
+
+    <div class="copy-notification" id="copy-notification">
+        <i class="fas fa-check-circle"></i> Report copied to clipboard!
+    </div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   DATA STORES
+   ============================================================ */
+
+// Daily snapshots: { "YYYY-MM-DD": [ {lot, percent, uncutThread}, ... ] }
+var dailySnapshots = {};
+
+// Monthly aggregated data per lot (current month): { lotNo: { totalDefect, totalUncut, count } }
+var monthlyData = {};
+
+// Historical monthly data: { "YYYY-MM": { lotNo: { totalDefect, totalUncut, count } } }
+var monthlyHistory = {};
+
+// Active lot list (current lot numbers)
+var defaultLotData = [
+    {lot:"8025",percent:10,uncutThread:4},
+    {lot:"8002",percent:8,uncutThread:4},
+    {lot:"8003",percent:9,uncutThread:4},
+    {lot:"8004",percent:10,uncutThread:3},
+    {lot:"8005",percent:8,uncutThread:5},
+    {lot:"8006",percent:10,uncutThread:5},
+    {lot:"8007",percent:10,uncutThread:4},
+    {lot:"8008",percent:9,uncutThread:4},
+    {lot:"8016",percent:8,uncutThread:5},
+    {lot:"8017",percent:27,uncutThread:12},
+    {lot:"8018",percent:11,uncutThread:5},
+    {lot:"8019",percent:10,uncutThread:5},
+    {lot:"8020",percent:11,uncutThread:5},
+    {lot:"8021",percent:10,uncutThread:3},
+    {lot:"8022",percent:10,uncutThread:5},
+    {lot:"8023",percent:10,uncutThread:6},
+    {lot:"8024",percent:12,uncutThread:7},
+    {lot:"8026",percent:10,uncutThread:4},
+    {lot:"8027",percent:16,uncutThread:3}
+];
+
+function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+/* ============================================================
+   LOAD / SAVE
+   ============================================================ */
+
+function loadCore(){
+    var saved = localStorage.getItem("finishingLotQIReportData");
+    var data;
+    try { data = saved ? JSON.parse(saved) : null; } catch(e){ data = null; }
+    if(!data || !data.lotData || !data.lotData.length){
+        return {
+            lotData: clone(defaultLotData),
+            thresholds: {green:8,yellow:15,red:16,highRisk:16},
+            textContent: {
+                target:"Finishing Defects Target 2.50% Below",
+                actionNote:"The acceptable defect percentage is below 10%. Necessary corrective measures must be taken promptly to improve the overall quality performance, especially for high-risk lots.",
+                statusUnder: "✅ Under Target",
+                statusOver: "❌ Over Target"
+            }
+        };
+    }
+    for(var i=0;i<data.lotData.length;i++){
+        if(typeof data.lotData[i].uncutThread === "undefined") data.lotData[i].uncutThread = 0;
+        if(typeof data.lotData[i].deleted === "undefined") data.lotData[i].deleted = false;
+    }
+    data.thresholds = data.thresholds || {green:8,yellow:15,red:16,highRisk:16};
+    data.textContent = data.textContent || {};
+    if(!data.textContent.statusUnder) data.textContent.statusUnder = "✅ Under Target";
+    if(!data.textContent.statusOver) data.textContent.statusOver = "❌ Over Target";
+    if(!data.textContent.target) data.textContent.target = "Finishing Defects Target 2.50% Below";
+    if(!data.textContent.actionNote) data.textContent.actionNote = "The acceptable defect percentage is below 10%. Necessary corrective measures must be taken promptly to improve the overall quality performance, especially for high-risk lots.";
+    return data;
+}
+
+var core = loadCore();
+var lotData = core.lotData;
+var thresholds = core.thresholds;
+var textContent = core.textContent;
+
+function saveCore(){
+    localStorage.setItem("finishingLotQIReportData", JSON.stringify({
+        lotData: lotData,
+        thresholds: thresholds,
+        textContent: textContent
+    }));
+}
+
+function loadDailySnapshots(){
+    var raw = localStorage.getItem("finishingDailySnapshots");
+    if(!raw){ dailySnapshots = {}; return; }
+    try { dailySnapshots = JSON.parse(raw); } catch(e){ dailySnapshots = {}; }
+}
+function saveDailySnapshots(){
+    localStorage.setItem("finishingDailySnapshots", JSON.stringify(dailySnapshots));
+}
+function loadMonthlyData(){
+    var raw = localStorage.getItem("finishingMonthlyData");
+    if(!raw){ monthlyData = {}; return; }
+    try { monthlyData = JSON.parse(raw); } catch(e){ monthlyData = {}; }
+}
+function saveMonthlyData(){
+    localStorage.setItem("finishingMonthlyData", JSON.stringify(monthlyData));
+}
+function loadMonthlyHistory(){
+    var raw = localStorage.getItem("finishingMonthlyHistory");
+    if(!raw){ monthlyHistory = {}; return; }
+    try { monthlyHistory = JSON.parse(raw); } catch(e){ monthlyHistory = {}; }
+}
+function saveMonthlyHistory(){
+    localStorage.setItem("finishingMonthlyHistory", JSON.stringify(monthlyHistory));
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+
+function getTodayKey(){
+    var now = new Date();
+    return now.getFullYear() + "-" + ("0"+(now.getMonth()+1)).slice(-2) + "-" + ("0"+now.getDate()).slice(-2);
+}
+function getYesterdayKey(){
+    var d = new Date(); d.setDate(d.getDate() - 1);
+    return d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0"+d.getDate()).slice(-2);
+}
+function getCurrentMonthKey(){
+    var now = new Date();
+    return now.getFullYear() + "-" + ("0"+(now.getMonth()+1)).slice(-2);
+}
+function getFormattedDate(){
+    var now = new Date();
+    return ("0"+now.getDate()).slice(-2) + " - " + ("0"+(now.getMonth()+1)).slice(-2) + " - " + now.getFullYear();
+}
+function monthKeyToLabel(key){
+    var parts = key.split("-");
+    var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    var idx = parseInt(parts[1],10) - 1;
+    return monthNames[idx] + " " + parts[0];
+}
+function getFormattedMonth(){
+    return monthKeyToLabel(getCurrentMonthKey());
+}
+function getActiveLots(){
+    return lotData.filter(function(l){ return !l.deleted; });
+}
+function getStatus(defect){
+    if(defect <= thresholds.highRisk) return textContent.statusUnder;
+    return textContent.statusOver;
+}
+function getStatusClass(defect){
+    return defect <= thresholds.highRisk ? "under" : "over";
+}
+function getEmoji(percent){
+    if(percent >= 1 && percent <= thresholds.green) return {emoji:"🟢",className:"green"};
+    if(percent > thresholds.green && percent <= thresholds.yellow) return {emoji:"🟡",className:"yellow"};
+    if(percent >= thresholds.red && percent <= 100) return {emoji:"🔴",className:"red"};
+    return {emoji:"",className:""};
+}
+
+/* ============================================================
+   SNAPSHOT HELPERS
+   ============================================================ */
+function saveTodaySnapshot(){
+    var key = getTodayKey();
+    var active = getActiveLots();
+    var snapshot = active.map(function(l){
+        return { lot: l.lot, percent: l.percent, uncutThread: l.uncutThread || 0 };
+    });
+    dailySnapshots[key] = snapshot;
+    saveDailySnapshots();
+}
+function avgFromSnapshot(snapshot){
+    if(!snapshot || !snapshot.length) return {defect:0, uncut:0};
+    var sd = 0, su = 0;
+    snapshot.forEach(function(item){ sd += item.percent; su += (item.uncutThread || 0); });
+    return { defect: sd / snapshot.length, uncut: su / snapshot.length };
+}
+function getMonthlyAvg(){
+    var totalD = 0, totalU = 0, count = 0;
+    for(var lot in monthlyData){
+        if(monthlyData.hasOwnProperty(lot)){
+            var d = monthlyData[lot];
+            if(d.count > 0){ totalD += d.totalDefect; totalU += d.totalUncut; count += d.count; }
+        }
+    }
+    if(!count) return {defect:0, uncut:0};
+    return { defect: totalD / count, uncut: totalU / count };
+}
+function getLast7DaysAvg(){
+    var totalD = 0, totalU = 0, count = 0;
+    var now = new Date();
+    for(var i=0;i<7;i++){
+        var d = new Date();
+        d.setDate(now.getDate() - i);
+        var key = d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0"+d.getDate()).slice(-2);
+        var snap = dailySnapshots[key];
+        if(snap && snap.length){
+            snap.forEach(function(item){ totalD += item.percent; totalU += (item.uncutThread || 0); count++; });
+        }
+    }
+    if(!count) return {defect:0, uncut:0};
+    return { defect: totalD / count, uncut: totalU / count };
+}
+function getYesterdayAvg(){
+    return avgFromSnapshot(dailySnapshots[getYesterdayKey()]);
+}
+function getTodayAvg(){
+    var snap = dailySnapshots[getTodayKey()];
+    if(snap && snap.length) return avgFromSnapshot(snap);
+    return avgFromSnapshot(getActiveLots());
+}
+
+/* ============================================================
+   MONTHLY BUILD / ARCHIVE
+   ============================================================ */
+function bootstrapMonthlyFromLots(){
+    if(Object.keys(monthlyData).length) return;
+    getActiveLots().forEach(function(item){
+        if(!monthlyData[item.lot]){
+            monthlyData[item.lot] = { totalDefect: item.percent, totalUncut: item.uncutThread || 0, count: 1 };
+        }
+    });
+    saveMonthlyData();
+}
+
+// When "Update Report" pressed → add current values to monthly & save snapshot
+function addDailyToMonthly(){
+    getActiveLots().forEach(function(item){
+        if(!monthlyData[item.lot]) monthlyData[item.lot] = { totalDefect: 0, totalUncut: 0, count: 0 };
+        monthlyData[item.lot].totalDefect += item.percent;
+        monthlyData[item.lot].totalUncut += (item.uncutThread || 0);
+        monthlyData[item.lot].count += 1;
+    });
+    saveMonthlyData();
+}
+
+// Archive current month into history (called at month change or manually)
+function archiveCurrentMonth(){
+    var key = getCurrentMonthKey();
+    if(Object.keys(monthlyData).length){
+        monthlyHistory[key] = clone(monthlyData);
+        saveMonthlyHistory();
+    }
+}
+
+/* ============================================================
+   ACTIVITY
+   ============================================================ */
+function pushActivity(text, type){
+    var activity = JSON.parse(localStorage.getItem("finishingActivity") || "[]");
+    activity.unshift({ text: text, type: type || "blue", time: new Date().toLocaleTimeString() });
+    if(activity.length > 30) activity = activity.slice(0,30);
+    localStorage.setItem("finishingActivity", JSON.stringify(activity));
+}
+function getActivity(){
+    return JSON.parse(localStorage.getItem("finishingActivity") || "[]");
+}
+
+/* ============================================================
+   HISTORY (Report snapshots)
+   ============================================================ */
+function getHistory(){
+    var raw = localStorage.getItem("finishingLotQIReportHistory");
+    if(!raw) return {};
+    try { return JSON.parse(raw); } catch(e){ return {}; }
+}
+function saveHistorySnapshot(dateKey){
+    var history = getHistory();
+    history[dateKey] = {
+        date: dateKey,
+        savedAt: new Date().toISOString(),
+        lotData: clone(lotData),
+        thresholds: clone(thresholds),
+        textContent: clone(textContent),
+        dailySnapshots: clone(dailySnapshots),
+        monthlyData: clone(monthlyData),
+        monthlyHistory: clone(monthlyHistory)
+    };
+    localStorage.setItem("finishingLotQIReportHistory", JSON.stringify(history));
+    pushActivity("Report saved for " + dateKey, "green");
+}
+
+/* ============================================================
+   RENDER HOME
+   ============================================================ */
+function renderHome(){
+    var mon = getMonthlyAvg();
+    var wk = getLast7DaysAvg();
+    var yest = getYesterdayAvg();
+    var tod = getTodayAvg();
+
+    document.getElementById('monthlyAvgDefect').textContent = mon.defect.toFixed(2) + '%';
+    document.getElementById('monthlyAvgUncut').textContent = mon.uncut.toFixed(2) + '%';
+    document.getElementById('weeklyAvgDefect').textContent = wk.defect.toFixed(2) + '%';
+    document.getElementById('weeklyAvgUncut').textContent = wk.uncut.toFixed(2) + '%';
+    document.getElementById('yesterdayAvgDefect').textContent = yest.defect.toFixed(2) + '%';
+    document.getElementById('yesterdayAvgUncut').textContent = yest.uncut.toFixed(2) + '%';
+    document.getElementById('todayAvgDefect').textContent = tod.defect.toFixed(2) + '%';
+    document.getElementById('todayAvgUncut').textContent = tod.uncut.toFixed(2) + '%';
+
+    var todaySnap = dailySnapshots[getTodayKey()];
+    var todayArr = (todaySnap && todaySnap.length) ? todaySnap : getActiveLots();
+    var totalLots = todayArr.length;
+    var under = 0, over = 0, highest = 0, highestLot = '—';
+    todayArr.forEach(function(l){
+        if(l.percent <= thresholds.highRisk) under++; else over++;
+        if(l.percent > highest){ highest = l.percent; highestLot = l.lot; }
+    });
+    var underPct = totalLots ? ((under/totalLots)*100).toFixed(2) : 0;
+    var overPct = totalLots ? ((over/totalLots)*100).toFixed(2) : 0;
+
+    document.getElementById('kpiContainer').innerHTML =
+        '<div class="kpi-card total">' +
+            '<div class="kpi-label"><i class="fas fa-boxes" style="color:#1d4ed8;"></i> Total Lots (Today)</div>' +
+            '<div class="kpi-value">'+totalLots+'</div>' +
+            '<div class="kpi-sub">'+getFormattedDate()+'</div>' +
+        '</div>' +
+        '<div class="kpi-card good">' +
+            '<div class="kpi-label"><i class="fas fa-circle-check" style="color:#0f7b4e;"></i> Lots Under Target</div>' +
+            '<div class="kpi-value">'+under+'</div>' +
+            '<div class="kpi-sub"><span class="badge">'+underPct+'%</span> of total</div>' +
+        '</div>' +
+        '<div class="kpi-card warning">' +
+            '<div class="kpi-label"><i class="fas fa-triangle-exclamation" style="color:#c26b0a;"></i> Lots Over Target</div>' +
+            '<div class="kpi-value">'+over+'</div>' +
+            '<div class="kpi-sub"><span class="badge">'+overPct+'%</span> of total</div>' +
+        '</div>' +
+        '<div class="kpi-card critical">' +
+            '<div class="kpi-label"><i class="fas fa-skull-crossbones" style="color:#b91c1c;"></i> Highest Defect %</div>' +
+            '<div class="kpi-value">'+highest.toFixed(1)+'%</div>' +
+            '<div class="kpi-sub">Lot: '+highestLot+'</div>' +
+        '</div>';
+
+    var tbody = document.getElementById('lotTableBody');
+    var sorted = todayArr.slice().sort(function(a,b){ return b.lot.localeCompare(a.lot); });
+    var rows = '';
+    sorted.forEach(function(item){
+        var status = getStatus(item.percent);
+        var cls = getStatusClass(item.percent);
+        rows += '<tr>' +
+            '<td><strong>'+item.lot+'</strong></td>' +
+            '<td>'+item.percent+'%</td>' +
+            '<td>'+(item.uncutThread||0)+'%</td>' +
+            '<td><span class="status-badge '+cls+'">'+status+'</span></td>' +
+        '</tr>';
+    });
+    if(!sorted.length) rows = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#8aa3bd;">No data for today</td></tr>';
+    tbody.innerHTML = rows;
+
+    document.getElementById('currentDateDisplay').textContent = getFormattedDate();
+    document.getElementById('heroMonth').textContent = getFormattedMonth();
+    document.getElementById('lotTableDate').innerHTML = '<i class="far fa-calendar-alt"></i> ' + getFormattedDate();
+    document.getElementById('sidebarTargetValue').innerHTML = '&lt; ' + thresholds.highRisk + '%';
+
+    renderActivity();
+}
+
+function renderActivity(){
+    var container = document.getElementById('activityList');
+    if(!container) return;
+    var activity = getActivity();
+    if(!activity.length){
+        container.innerHTML = '<li class="activity-item" style="color:#8aa3bd;">No recent activity</li>';
+        return;
+    }
+    var html = '';
+    activity.slice(0,6).forEach(function(entry){
+        html += '<li class="activity-item">' +
+            '<span class="dot '+(entry.type||'blue')+'"></span>' +
+            '<span class="activity-text">'+entry.text+'</span>' +
+            '<span class="activity-time">'+entry.time+'</span>' +
+        '</li>';
+    });
+    container.innerHTML = html;
+}
+
+/* ============================================================
+   DAILY REPORT
+   ============================================================ */
+function renderDailyReport(){
+    var active = getActiveLots();
+    var container = document.getElementById('lots-container');
+    var html = '';
+    active.forEach(function(item){
+        var ind = getEmoji(item.percent);
+        html += '<div class="lot-input-group">' +
+            '<span class="lot-label">Lot '+item.lot+'</span>' +
+            '<input type="number" class="percent-input" value="'+item.percent+'" min="0" max="100" data-lot="'+item.lot+'">' +
+            '<span class="lot-label">%</span>' +
+            '<input type="number" class="uncut-input" value="'+(item.uncutThread||0)+'" min="0" max="100" data-lot="'+item.lot+'">' +
+            '<span class="lot-label" style="min-width:20px;">%</span>' +
+            '<span class="indicator '+ind.className+'">'+ind.emoji+'</span>' +
+        '</div>';
+    });
+    container.innerHTML = html || '<p class="text-muted">No active lots. Add lots in Lot Entry.</p>';
+
+    document.getElementById('highRiskValue').textContent = thresholds.highRisk;
+    var hh = '';
+    active.forEach(function(item){
+        if(item.percent >= thresholds.highRisk && item.percent <= 100){
+            var u = item.uncutThread > 0 ? "; Uncut thread " + item.uncutThread + "%" : "";
+            hh += '<div class="high-risk-item">Lot '+item.lot+' – '+item.percent+'% 🔴'+u+'</div>';
+        }
+    });
+    document.getElementById('high-risk-container').innerHTML = hh || '<div>No high-risk lots</div>';
+    document.getElementById('actionNoteText').textContent = textContent.actionNote;
+    document.getElementById('dailyReportDate').innerHTML = '<i class="far fa-calendar-alt"></i> ' + getFormattedDate();
+}
+
+/* ============================================================
+   LOT ENTRY
+   ============================================================ */
+function renderLotEntryPage(){
+    var container = document.getElementById('lotEntryListContainer');
+    var html = '';
+    lotData.forEach(function(item, idx){
+        var isDeleted = item.deleted;
+        html += '<div class="lot-input-group" style="' + (isDeleted ? 'opacity:0.6; border-color:#e74c3c;' : '') + '">' +
+            '<span class="lot-label" style="min-width:80px;">' + (isDeleted ? '🚫 ' : '📦 ') + item.lot + '</span>' +
+            '<span style="flex:1; font-size:0.8rem; color:#555;">' + (isDeleted ? 'Soft deleted' : 'Defect: '+item.percent+'%') + '</span>' +
+            '<button class="lot-item-btn ' + (isDeleted ? 'restore' : '') + '" data-lot-entry-toggle="'+idx+'" style="padding:6px 10px; border-radius:6px; border:none; cursor:pointer; background:' + (isDeleted ? '#27ae60' : '#e74c3c') + '; color:white; font-weight:600;">' + (isDeleted ? '↩️ Restore' : '🗑️ Remove') + '</button>' +
+        '</div>';
+    });
+    container.innerHTML = html || '<p class="text-muted">No lots available.</p>';
+
+    var btns = container.querySelectorAll('[data-lot-entry-toggle]');
+    for(var i=0;i<btns.length;i++){
+        btns[i].addEventListener('click', function(){
+            var idx = parseInt(this.getAttribute('data-lot-entry-toggle'),10);
+            lotData[idx].deleted = !lotData[idx].deleted;
+            saveCore();
+            if(lotData[idx].deleted){
+                pushActivity('Lot ' + lotData[idx].lot + ' soft-deleted (monthly totals unchanged)', 'orange');
+            } else {
+                pushActivity('Lot ' + lotData[idx].lot + ' restored', 'green');
+            }
+            renderLotEntryPage();
+            updateAllPages();
+        });
+    }
+}
+
+/* ============================================================
+   VIEW REPORT
+   ============================================================ */
+function generateReportText(){
+    var active = getActiveLots();
+    var text = "📅 Daily Finishing QI Report – " + getFormattedDate() + "
+";
+    text += "🏭 Colossus Apparel Limited
+";
+    text += "🎯 " + textContent.target + "
+
+";
+    text += "Quality Performance by Lot (Defect %):
+
+";
+    active.forEach(function(item){
+        var ind = getEmoji(item.percent);
+        var u = item.uncutThread > 0 ? "; Uncut thread " + item.uncutThread + "%" : "";
+        text += "Lot " + item.lot + " – " + item.percent + "% " + ind.emoji + u + "
+";
+    });
+    text += "
+🔴 High-Risk Lots (Defect ≥" + thresholds.highRisk + "%):
+";
+    var found = false;
+    active.forEach(function(item){
+        if(item.percent >= thresholds.highRisk && item.percent <= 100){
+            var u = item.uncutThread > 0 ? "; Uncut thread " + item.uncutThread + "%" : "";
+            text += "Lot " + item.lot + " – " + item.percent + "%🔴" + u + "
+";
+            found = true;
+        }
+    });
+    if(!found) text += "None
+";
+    text += "
+📌 Action Note:
+" + textContent.actionNote;
+    return text;
+}
+function updateViewReport(){
+    document.getElementById('viewReportContent').textContent = generateReportText();
+}
+
+/* ============================================================
+   DASHBOARD (with Month Selector)
+   ============================================================ */
+function populateMonthSelector(){
+    var sel = document.getElementById('monthSelector');
+    if(!sel) return;
+    var currentMonth = getCurrentMonthKey();
+    var options = [];
+    options.push(currentMonth);
+    for(var key in monthlyHistory){
+        if(monthlyHistory.hasOwnProperty(key) && key !== currentMonth) options.push(key);
+    }
+    options.sort().reverse();
+
+    sel.innerHTML = '';
+    options.forEach(function(key){
+        var opt = document.createElement('option');
+        opt.value = key;
+        var label = monthKeyToLabel(key);
+        if(key === currentMonth) label += " (Current)";
+        opt.textContent = label;
+        sel.appendChild(opt);
+    });
+}
+
+function getMonthlyDataForSelectedMonth(monthKey){
+    if(monthKey === getCurrentMonthKey()) return monthlyData;
+    return monthlyHistory[monthKey] || {};
+}
+
+function updateDashboardPage(){
+    populateMonthSelector();
+    var sel = document.getElementById('monthSelector');
+    if(!sel) return;
+    var selectedMonth = sel.value || getCurrentMonthKey();
+    var data = getMonthlyDataForSelectedMonth(selectedMonth);
+
+    var monthLabel = monthKeyToLabel(selectedMonth);
+    document.getElementById('dashMonthLabel').textContent = monthLabel + " Average";
+    document.getElementById('dashKpiMonth').textContent = monthLabel;
+    document.getElementById('dashTableMonth').textContent = monthLabel;
+
+    var totalD = 0, totalU = 0, count = 0;
+    for(var lot in data){
+        if(data.hasOwnProperty(lot)){
+            var d = data[lot];
+            if(d.count > 0){ totalD += d.totalDefect; totalU += d.totalUncut; count += d.count; }
+        }
+    }
+    var avgDefect = count ? (totalD / count) : 0;
+    var avgUncut = count ? (totalU / count) : 0;
+
+    var isCurrent = (selectedMonth === getCurrentMonthKey());
+    var wk = isCurrent ? getLast7DaysAvg() : {defect:0, uncut:0};
+    var yest = isCurrent ? getYesterdayAvg() : {defect:0, uncut:0};
+    var tod = isCurrent ? getTodayAvg() : {defect:0, uncut:0};
+
+    document.getElementById('dashMonthlyDefect').textContent = avgDefect.toFixed(2) + '%';
+    document.getElementById('dashMonthlyUncut').textContent = avgUncut.toFixed(2) + '%';
+    document.getElementById('dashWeeklyDefect').textContent = isCurrent ? (wk.defect.toFixed(2) + '%') : 'N/A';
+    document.getElementById('dashWeeklyUncut').textContent = isCurrent ? (wk.uncut.toFixed(2) + '%') : 'N/A';
+    document.getElementById('dashYesterdayDefect').textContent = isCurrent ? (yest.defect.toFixed(2) + '%') : 'N/A';
+    document.getElementById('dashYesterdayUncut').textContent = isCurrent ? (yest.uncut.toFixed(2) + '%') : 'N/A';
+    document.getElementById('dashTodayDefect').textContent = isCurrent ? (tod.defect.toFixed(2) + '%') : 'N/A';
+    document.getElementById('dashTodayUncut').textContent = isCurrent ? (tod.uncut.toFixed(2) + '%') : 'N/A';
+
+    var monthlyArr = [];
+    for(var lot2 in data){
+        if(data.hasOwnProperty(lot2)){
+            var d2 = data[lot2];
+            if(d2.count > 0){
+                monthlyArr.push({ lot: lot2, avgDefect: d2.totalDefect/d2.count, avgUncut: d2.totalUncut/d2.count });
+            }
+        }
+    }
+    var totalLots = monthlyArr.length;
+    var under = 0, over = 0, highest = 0, highestLot = '—';
+    monthlyArr.forEach(function(m){
+        if(m.avgDefect <= thresholds.highRisk) under++; else over++;
+        if(m.avgDefect > highest){ highest = m.avgDefect; highestLot = m.lot; }
+    });
+    var underPct = totalLots ? ((under/totalLots)*100).toFixed(2) : 0;
+    var overPct = totalLots ? ((over/totalLots)*100).toFixed(2) : 0;
+
+    document.getElementById('dashboardKpiContainer').innerHTML =
+        '<div class="kpi-card total">' +
+            '<div class="kpi-label"><i class="fas fa-boxes" style="color:#1d4ed8;"></i> Total Lots (Month)</div>' +
+            '<div class="kpi-value">'+totalLots+'</div>' +
+            '<div class="kpi-sub">'+monthLabel+'</div>' +
+        '</div>' +
+        '<div class="kpi-card good">' +
+            '<div class="kpi-label"><i class="fas fa-circle-check" style="color:#0f7b4e;"></i> Lots Under Target</div>' +
+            '<div class="kpi-value">'+under+'</div>' +
+            '<div class="kpi-sub"><span class="badge">'+underPct+'%</span> of total</div>' +
+        '</div>' +
+        '<div class="kpi-card warning">' +
+            '<div class="kpi-label"><i class="fas fa-triangle-exclamation" style="color:#c26b0a;"></i> Lots Over Target</div>' +
+            '<div class="kpi-value">'+over+'</div>' +
+            '<div class="kpi-sub"><span class="badge">'+overPct+'%</span> of total</div>' +
+        '</div>' +
+        '<div class="kpi-card critical">' +
+            '<div class="kpi-label"><i class="fas fa-skull-crossbones" style="color:#b91c1c;"></i> Highest Avg Defect %</div>' +
+            '<div class="kpi-value">'+highest.toFixed(1)+'%</div>' +
+            '<div class="kpi-sub">Lot: '+highestLot+'</div>' +
+        '</div>';
+
+    var tbody = document.getElementById('dashboardTableBody');
+    var sorted = monthlyArr.slice().sort(function(a,b){ return b.lot.localeCompare(a.lot); });
+    var rows = '';
+    sorted.forEach(function(item){
+        var status = getStatus(item.avgDefect);
+        var cls = getStatusClass(item.avgDefect);
+        rows += '<tr>' +
+            '<td><strong>'+item.lot+'</strong></td>' +
+            '<td>'+item.avgDefect.toFixed(1)+'%</td>' +
+            '<td>'+item.avgUncut.toFixed(1)+'%</td>' +
+            '<td><span class="status-badge '+cls+'">'+status+'</span></td>' +
+        '</tr>';
+    });
+    if(!sorted.length) rows = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#8aa3bd;">No monthly data</td></tr>';
+    tbody.innerHTML = rows;
+}
+
+/* ============================================================
+   A4 PDF
+   ============================================================ */
+function updateA4Report(){
+    var el = document.getElementById('a4ReportContent');
+    var monthlyArr = [];
+    for(var lot in monthlyData){
+        if(monthlyData.hasOwnProperty(lot)){
+            var d = monthlyData[lot];
+            if(d.count > 0){
+                monthlyArr.push({ lot: lot, avgDefect: d.totalDefect/d.count, avgUncut: d.totalUncut/d.count });
+            }
+        }
+    }
+    monthlyArr.sort(function(a,b){ return b.lot.localeCompare(a.lot); });
+
+    var html = '<div style="text-align:center; margin-bottom:20px;">' +
+        '<h2 style="color:#0b1e33; margin-bottom:4px;">Daily Finishing QI Report</h2>' +
+        '<p style="color:#555; font-size:0.9rem;">Colossus Apparel Limited · ' + getFormattedMonth() + '</p>' +
+        '<p style="color:#1d4ed8; font-weight:600;">' + textContent.target + '</p>' +
+        '</div>';
+    html += '<table style="width:100%; border-collapse:collapse; font-size:0.85rem;">' +
+        '<thead><tr style="background:#0b1e33; color:white;">' +
+        '<th style="padding:10px; text-align:left;">Lot No.</th>' +
+        '<th style="padding:10px; text-align:left;">Avg Defect %</th>' +
+        '<th style="padding:10px; text-align:left;">Avg Uncut Thread %</th>' +
+        '<th style="padding:10px; text-align:left;">Status</th>' +
+        '</tr></thead><tbody>';
+    monthlyArr.forEach(function(item){
+        var status = getStatus(item.avgDefect);
+        html += '<tr style="border-bottom:1px solid #eee;">' +
+            '<td style="padding:8px;">'+item.lot+'</td>' +
+            '<td style="padding:8px;">'+item.avgDefect.toFixed(1)+'%</td>' +
+            '<td style="padding:8px;">'+item.avgUncut.toFixed(1)+'%</td>' +
+            '<td style="padding:8px;">'+status+'</td>' +
+        '</tr>';
+    });
+    html += '</tbody></table>';
+    html += '<div style="margin-top:20px; padding:15px; background:#f8f9fa; border-left:4px solid #3498db; border-radius:4px;">' +
+        '<strong>Action Note:</strong><br>' + textContent.actionNote + '</div>';
+    el.innerHTML = html;
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+var adminAuthenticated = false;
+
+function renderSettings(){
+    var loginPrompt = document.getElementById('settingsLoginPrompt');
+    var content = document.getElementById('settingsContent');
+    if(adminAuthenticated){
+        loginPrompt.style.display = 'none';
+        content.style.display = 'block';
+        document.getElementById('greenThreshold').value = thresholds.green;
+        document.getElementById('yellowThreshold').value = thresholds.yellow;
+        document.getElementById('redThreshold').value = thresholds.red;
+        document.getElementById('highRiskThreshold').value = thresholds.highRisk;
+        document.getElementById('targetMessage').value = textContent.target;
+        document.getElementById('actionNote').value = textContent.actionNote;
+        document.getElementById('statusUnderText').value = textContent.statusUnder;
+        document.getElementById('statusOverText').value = textContent.statusOver;
+        renderLotList();
+    } else {
+        loginPrompt.style.display = 'block';
+        content.style.display = 'none';
+    }
+}
+
+function renderLotList(){
+    var list = document.getElementById('lotList');
+    var html = '';
+    lotData.forEach(function(item, idx){
+        var isDeleted = item.deleted;
+        html += '<div class="lot-item" style="' + (isDeleted ? 'opacity:0.6;' : '') + '">' +
+            '<input type="text" value="'+item.lot.replace(/"/g,'&quot;')+'" data-original="'+item.lot.replace(/"/g,'&quot;')+'" data-idx="'+idx+'" ' + (isDeleted ? 'disabled' : '') + '>' +
+            '<div class="lot-item-buttons">' +
+            (isDeleted ?
+                '<button class="lot-item-btn restore" data-restore-lot="'+idx+'">↩️ Restore</button>' :
+                '<button class="lot-item-btn delete" data-delete-lot="'+idx+'">🗑️ Delete</button>') +
+            '</div></div>';
+    });
+    list.innerHTML = html;
+
+    var inputs = list.querySelectorAll('input[type="text"]');
+    for(var i=0;i<inputs.length;i++){
+        inputs[i].addEventListener('change', function(){
+            var original = this.getAttribute('data-original');
+            var newName = this.value.trim();
+            if(!newName || newName === original){ this.value = original; return; }
+            for(var j=0;j<lotData.length;j++){
+                if(lotData[j].lot === newName){ alert('Lot name already exists!'); this.value = original; return; }
+            }
+            for(var k=0;k<lotData.length;k++){
+                if(lotData[k].lot === original){ lotData[k].lot = newName; this.setAttribute('data-original', newName); break; }
+            }
+            if(monthlyData[original]){
+                monthlyData[newName] = monthlyData[original];
+                delete monthlyData[original];
+                saveMonthlyData();
+            }
+            for(var key in dailySnapshots){
+                if(dailySnapshots.hasOwnProperty(key)){
+                    dailySnapshots[key].forEach(function(s){ if(s.lot === original) s.lot = newName; });
+                }
+            }
+            saveDailySnapshots();
+            saveCore(); pushActivity('Lot renamed to ' + newName, 'blue'); updateAllPages();
+        });
+    }
+
+    var deleteButtons = list.querySelectorAll('[data-delete-lot]');
+    for(var d=0;d<deleteButtons.length;d++){
+        deleteButtons[d].addEventListener('click', function(){
+            var index = parseInt(this.getAttribute('data-delete-lot'),10);
+            if(confirm('Permanently delete this lot? Monthly totals will be reduced.')){
+                var removed = lotData[index].lot;
+                lotData.splice(index,1);
+                delete monthlyData[removed];
+                for(var key in dailySnapshots){
+                    if(dailySnapshots.hasOwnProperty(key)){
+                        dailySnapshots[key] = dailySnapshots[key].filter(function(s){ return s.lot !== removed; });
+                    }
+                }
+                saveDailySnapshots();
+                saveMonthlyData();
+                saveCore(); pushActivity('Lot ' + removed + ' permanently deleted', 'red');
+                renderLotList(); updateAllPages();
+            }
+        });
+    }
+
+    var restoreButtons = list.querySelectorAll('[data-restore-lot]');
+    for(var r=0;r<restoreButtons.length;r++){
+        restoreButtons[r].addEventListener('click', function(){
+            var index = parseInt(this.getAttribute('data-restore-lot'),10);
+            lotData[index].deleted = false;
+            saveCore(); pushActivity('Lot ' + lotData[index].lot + ' restored', 'green');
+            renderLotList(); updateAllPages();
+        });
+    }
+}
+
+function saveAllSettings(){
+    var green = parseInt(document.getElementById('greenThreshold').value,10);
+    var yellow = parseInt(document.getElementById('yellowThreshold').value,10);
+    var red = parseInt(document.getElementById('redThreshold').value,10);
+    var high = parseInt(document.getElementById('highRiskThreshold').value,10);
+    if(isNaN(green)||isNaN(yellow)||isNaN(red)||isNaN(high)){ alert('Please enter valid numbers for all thresholds.'); return; }
+    if(green >= yellow || yellow >= red){ alert('Color thresholds must be in increasing order: Green < Yellow < Red'); return; }
+    if(high < 0 || high > 100){ alert('High-Risk threshold must be between 0 and 100'); return; }
+    thresholds.green = green; thresholds.yellow = yellow; thresholds.red = red; thresholds.highRisk = high;
+    textContent.target = document.getElementById('targetMessage').value;
+    textContent.actionNote = document.getElementById('actionNote').value;
+    textContent.statusUnder = document.getElementById('statusUnderText').value;
+    textContent.statusOver = document.getElementById('statusOverText').value;
+    saveCore(); pushActivity('Settings updated', 'blue');
+    updateAllPages();
+    alert('All settings saved successfully!');
+}
+
+/* ============================================================
+   BACKUP / RESTORE
+   ============================================================ */
+function backupAllData(){
+    var backup = {
+        exportedAt: new Date().toISOString(),
+        version: "1.1",
+        finishingLotQIReportData: JSON.parse(localStorage.getItem("finishingLotQIReportData") || "null"),
+        finishingDailySnapshots: JSON.parse(localStorage.getItem("finishingDailySnapshots") || "null"),
+        finishingMonthlyData: JSON.parse(localStorage.getItem("finishingMonthlyData") || "null"),
+        finishingMonthlyHistory: JSON.parse(localStorage.getItem("finishingMonthlyHistory") || "null"),
+        finishingActivity: JSON.parse(localStorage.getItem("finishingActivity") || "null"),
+        finishingLotQIReportHistory: JSON.parse(localStorage.getItem("finishingLotQIReportHistory") || "null")
+    };
+    var dataStr = JSON.stringify(backup, null, 2);
+    var blob = new Blob([dataStr], {type: "application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var filename = "QI_Backup_" + getFormattedMonth().replace(" ", "_") + "_" + getFormattedDate().replace(/ - /g, "-") + ".json";
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    pushActivity('Backup downloaded: ' + filename, 'green');
+    renderActivity();
+}
+
+/* ============================================================
+   CHARTS
+   ============================================================ */
+var barChartDaily = null, pieChartDaily = null;
+var barChartMonthly = null, pieChartMonthly = null, lineChartMonthly = null;
+
+function renderCharts(){
+    var active = getActiveLots();
+    var dailyLabels = active.map(function(l){ return l.lot; });
+    var dailyDefects = active.map(function(l){ return l.percent; });
+
+    var barDailyCtx = document.getElementById('barChartDaily');
+    if(barDailyCtx){
+        if(barChartDaily) barChartDaily.destroy();
+        barChartDaily = new Chart(barDailyCtx, {
+            type: 'bar',
+            data: {
+                labels: dailyLabels,
+                datasets: [{
+                    label: 'Defect %',
+                    data: dailyDefects,
+                    backgroundColor: dailyDefects.map(function(v){
+                        if(v <= thresholds.green) return '#27ae60';
+                        if(v <= thresholds.yellow) return '#f39c12';
+                        return '#e74c3c';
+                    }),
+                    borderRadius: 6
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 30 } } }
+        });
+    }
+
+    var underD = 0, overD = 0;
+    active.forEach(function(l){ if(l.percent <= thresholds.highRisk) underD++; else overD++; });
+    var pieDailyCtx = document.getElementById('pieChartDaily');
+    if(pieDailyCtx){
+        if(pieChartDaily) pieChartDaily.destroy();
+        pieChartDaily = new Chart(pieDailyCtx, {
+            type: 'doughnut',
+            data: { labels: ['Under Target', 'Over Target'], datasets: [{ data: [underD, overD], backgroundColor: ['#27ae60', '#e74c3c'], borderWidth: 0 }] },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+        });
+    }
+
+    var monthlyArr = [];
+    for(var lot in monthlyData){
+        if(monthlyData.hasOwnProperty(lot)){
+            var d = monthlyData[lot];
+            if(d.count > 0){
+                monthlyArr.push({ lot: lot, avgDefect: d.totalDefect/d.count, avgUncut: d.totalUncut/d.count });
+            }
+        }
+    }
+    var mLabels = monthlyArr.map(function(m){ return m.lot; });
+    var mDefects = monthlyArr.map(function(m){ return m.avgDefect; });
+
+    var barMonthlyCtx = document.getElementById('barChartMonthly');
+    if(barMonthlyCtx){
+        if(barChartMonthly) barChartMonthly.destroy();
+        barChartMonthly = new Chart(barMonthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: mLabels,
+                datasets: [{
+                    label: 'Avg Defect %',
+                    data: mDefects,
+                    backgroundColor: mDefects.map(function(v){
+                        if(v <= thresholds.green) return '#27ae60';
+                        if(v <= thresholds.yellow) return '#f39c12';
+                        return '#e74c3c';
+                    }),
+                    borderRadius: 6
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 30 } } }
+        });
+    }
+
+    var underM = 0, overM = 0;
+    monthlyArr.forEach(function(m){ if(m.avgDefect <= thresholds.highRisk) underM++; else overM++; });
+    var pieMonthlyCtx = document.getElementById('pieChartMonthly');
+    if(pieMonthlyCtx){
+        if(pieChartMonthly) pieChartMonthly.destroy();
+        pieChartMonthly = new Chart(pieMonthlyCtx, {
+            type: 'doughnut',
+            data: { labels: ['Under Target', 'Over Target'], datasets: [{ data: [underM, overM], backgroundColor: ['#27ae60', '#e74c3c'], borderWidth: 0 }] },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+        });
+    }
+
+    var lineMonthlyCtx = document.getElementById('lineChartMonthly');
+    if(lineMonthlyCtx){
+        if(lineChartMonthly) lineChartMonthly.destroy();
+        lineChartMonthly = new Chart(lineMonthlyCtx, {
+            type: 'line',
+            data: {
+                labels: mLabels,
+                datasets: [{
+                    label: 'Avg Uncut Thread %',
+                    data: monthlyArr.map(function(m){ return m.avgUncut; }),
+                    borderColor: '#f39c12',
+                    backgroundColor: 'rgba(243,156,18,0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#f39c12'
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+    }
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function navigateTo(pageId){
+    var items = document.querySelectorAll('#sidebarMenu li');
+    for(var i=0;i<items.length;i++){
+        items[i].classList.remove('active');
+        if(items[i].getAttribute('data-page') === pageId) items[i].classList.add('active');
+    }
+    var sections = document.querySelectorAll('.page-section');
+    for(var s=0;s<sections.length;s++) sections[s].classList.remove('active');
+    var target = document.getElementById('page-' + pageId);
+    if(target) target.classList.add('active');
+
+    if(pageId === 'home') renderHome();
+    if(pageId === 'dailyReport') renderDailyReport();
+    if(pageId === 'lotEntry') renderLotEntryPage();
+    if(pageId === 'viewReport') updateViewReport();
+    if(pageId === 'dashboard') updateDashboardPage();
+    if(pageId === 'charts') renderCharts();
+    if(pageId === 'pdfReport') updateA4Report();
+    if(pageId === 'settings') renderSettings();
+}
+
+function updateAllPages(){
+    saveTodaySnapshot();
+    renderHome();
+    renderDailyReport();
+    renderLotEntryPage();
+    updateViewReport();
+    updateDashboardPage();
+    updateA4Report();
+    if(document.getElementById('page-charts').classList.contains('active')) renderCharts();
+    if(adminAuthenticated) renderSettings();
+}
+
+/* ============================================================
+   COPY / PASTE
+   ============================================================ */
+function copyText(text){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){ showCopyNotification(); }, function(){ fallbackCopy(text); });
+    } else { fallbackCopy(text); }
+}
+function fallbackCopy(text){
+    var area = document.createElement('textarea');
+    area.value = text;
+    area.style.position = 'fixed'; area.style.left = '-9999px';
+    document.body.appendChild(area);
+    area.select();
+    try { document.execCommand('copy'); showCopyNotification(); } catch(e){ prompt('Copy this report:', text); }
+    document.body.removeChild(area);
+}
+function showCopyNotification(){
+    var el = document.getElementById('copy-notification');
+    el.classList.add('show');
+    setTimeout(function(){ el.classList.remove('show'); }, 2500);
+}
+function parsePastedPercentages(text){
+    var cleaned = text.replace(/[\u200B\u202F\u2009]/g,' ').replace(/[^\d%\n\t,\. ]/g,'').trim();
+    if(!cleaned) return [];
+    var parts = cleaned.split(/[\n,\t ]+/);
+    var values = [];
+    for(var i=0;i<parts.length;i++){
+        var v = parts[i].replace('%','');
+        var num = parseFloat(v);
+        if(!isNaN(num)){ num = Math.min(100,Math.max(0,Math.round(num))); values.push(num); }
+    }
+    return values;
+}
+function applyPasted(values, type){
+    if(!values.length){ alert('No valid percentages found.'); return false; }
+    var active = getActiveLots();
+    var max = Math.min(values.length, active.length);
+    if(values.length > active.length) alert('You pasted ' + values.length + ' values but there are only ' + active.length + ' active lots. Only the first ' + active.length + ' values will be used.');
+    for(var i=0;i<max;i++){
+        if(type === 'uncut') active[i].uncutThread = values[i];
+        else active[i].percent = values[i];
+    }
+    saveCore();
+    updateAllPages();
+    return true;
+}
+
+/* ============================================================
+   EVENT BINDINGS
+   ============================================================ */
+var menuItems = document.querySelectorAll('#sidebarMenu li');
+for(var m=0;m<menuItems.length;m++){
+    menuItems[m].addEventListener('click', function(){ navigateTo(this.getAttribute('data-page')); });
+}
+
+var loginModal = document.getElementById('loginModal');
+function openLoginModal(){ loginModal.style.display = 'flex'; document.getElementById('username').focus(); }
+function closeLoginModal(){ loginModal.style.display = 'none'; document.getElementById('username').value = ''; document.getElementById('password').value = ''; }
+
+document.getElementById('userProfileBtn').addEventListener('click', openLoginModal);
+document.getElementById('settingsLoginBtn').addEventListener('click', openLoginModal);
+document.getElementById('cancelLoginBtn').addEventListener('click', closeLoginModal);
+
+document.getElementById('loginBtn').addEventListener('click', function(){
+    var u = document.getElementById('username').value;
+    var p = document.getElementById('password').value;
+    if(u === 'Rabbi' && p === '127627'){
+        adminAuthenticated = true;
+        closeLoginModal();
+        pushActivity('Admin logged in', 'blue');
+        renderSettings();
+        alert('Admin login successful!');
+    } else {
+        alert('Invalid credentials. Please try again.');
+    }
+});
+
+document.getElementById('update-btn').addEventListener('click', function(){
+    var inputs = document.querySelectorAll('#lots-container .percent-input');
+    var uncutInputs = document.querySelectorAll('#lots-container .uncut-input');
+    for(var i=0;i<inputs.length;i++){
+        var lot = inputs[i].getAttribute('data-lot');
+        var val = parseInt(inputs[i].value,10); if(isNaN(val)) val = 0;
+        for(var j=0;j<lotData.length;j++){ if(lotData[j].lot === lot){ lotData[j].percent = Math.min(100,Math.max(0,val)); break; } }
+    }
+    for(var k=0;k<uncutInputs.length;k++){
+        var lot2 = uncutInputs[k].getAttribute('data-lot');
+        var val2 = parseInt(uncutInputs[k].value,10); if(isNaN(val2)) val2 = 0;
+        for(var l=0;l<lotData.length;l++){ if(lotData[l].lot === lot2){ lotData[l].uncutThread = Math.min(100,Math.max(0,val2)); break; } }
+    }
+    saveCore();
+    addDailyToMonthly();
+    saveHistorySnapshot(getTodayKey());
+    updateAllPages();
+    alert('Report updated and saved for ' + getFormattedDate() + '. Monthly totals updated.');
+});
+
+document.getElementById('copy-btn').addEventListener('click', function(){ copyText(generateReportText()); });
+document.getElementById('viewReportCopyBtn').addEventListener('click', function(){ copyText(generateReportText()); });
+
+var pasteModal = document.getElementById('pasteModal');
+document.getElementById('paste-btn').addEventListener('click', function(){ document.getElementById('pasteArea').value = ''; pasteModal.style.display = 'flex'; document.getElementById('pasteArea').focus(); });
+document.getElementById('pasteCancelBtn').addEventListener('click', function(){ pasteModal.style.display = 'none'; });
+document.getElementById('pasteApplyBtn').addEventListener('click', function(){
+    var values = parsePastedPercentages(document.getElementById('pasteArea').value);
+    if(applyPasted(values, 'percent')) pasteModal.style.display = 'none';
+});
+
+var uncutPasteModal = document.getElementById('uncutPasteModal');
+document.getElementById('uncut-btn').addEventListener('click', function(){ document.getElementById('uncutPasteArea').value = ''; uncutPasteModal.style.display = 'flex'; document.getElementById('uncutPasteArea').focus(); });
+document.getElementById('uncutPasteCancelBtn').addEventListener('click', function(){ uncutPasteModal.style.display = 'none'; });
+document.getElementById('uncutPasteApplyBtn').addEventListener('click', function(){
+    var values = parsePastedPercentages(document.getElementById('uncutPasteArea').value);
+    if(applyPasted(values, 'uncut')) uncutPasteModal.style.display = 'none';
+});
+
+var historyModal = document.getElementById('historyModal');
+document.getElementById('history-btn').addEventListener('click', function(){ renderHistory(); historyModal.style.display = 'flex'; });
+document.getElementById('historyCloseBtn').addEventListener('click', function(){ historyModal.style.display = 'none'; });
+historyModal.addEventListener('click', function(e){ if(e.target === historyModal) historyModal.style.display = 'none'; });
+
+document.getElementById('addLotEntryBtn').addEventListener('click', function(){
+    var name = document.getElementById('newLotNameEntry').value.trim();
+    if(!name){ alert('Please enter a lot name'); return; }
+    for(var i=0;i<lotData.length;i++){ if(lotData[i].lot === name){ alert('Lot name already exists!'); return; } }
+    lotData.push({lot:name, percent:0, uncutThread:0, deleted:false});
+    document.getElementById('newLotNameEntry').value = '';
+    saveCore(); pushActivity('New lot ' + name + ' added', 'green');
+    renderLotEntryPage(); updateAllPages();
+});
+
+document.getElementById('lotEntryToDailyReportBtn').addEventListener('click', function(){ navigateTo('dailyReport'); });
+
+document.getElementById('saveAllBtn').addEventListener('click', saveAllSettings);
+
+document.getElementById('addLotBtn').addEventListener('click', function(){
+    var name = document.getElementById('newLotName').value.trim();
+    if(!name){ alert('Please enter a lot name'); return; }
+    for(var i=0;i<lotData.length;i++){ if(lotData[i].lot === name){ alert('Lot name already exists!'); return; } }
+    lotData.push({lot:name, percent:0, uncutThread:0, deleted:false});
+    document.getElementById('newLotName').value = '';
+    saveCore(); pushActivity('New lot ' + name + ' added', 'green');
+    renderLotList(); updateAllPages();
+});
+
+document.getElementById('backupBtn').addEventListener('click', backupAllData);
+
+// Month selector change
+document.getElementById('monthSelector').addEventListener('change', function(){
+    updateDashboardPage();
+});
+
+/* ============================================================
+   HISTORY MODAL RENDER
+   ============================================================ */
+function renderHistory(){
+    var history = getHistory();
+    var dates = [];
+    for(var key in history){ if(history.hasOwnProperty(key)) dates.push(key); }
+    dates.sort().reverse();
+    var list = document.getElementById('historyList');
+    if(!dates.length){ list.innerHTML = '<div class="history-item">No saved report history yet.</div>'; return; }
+    list.innerHTML = '';
+    dates.forEach(function(date){
+        var report = history[date];
+        var item = document.createElement('div');
+        item.className = 'history-item';
+        var dateDiv = document.createElement('div');
+        dateDiv.className = 'history-date';
+        dateDiv.textContent = '📅 ' + date;
+        var summary = document.createElement('div');
+        summary.className = 'history-summary';
+        summary.textContent = (report.lotData ? report.lotData.length : 0) + ' lots saved';
+        var actions = document.createElement('div');
+        actions.className = 'history-actions';
+        var view = document.createElement('button');
+        view.className = 'history-action-btn history-view';
+        view.textContent = 'View';
+        var del = document.createElement('button');
+        del.className = 'history-action-btn history-delete';
+        del.textContent = 'Delete';
+        var detail = document.createElement('div');
+        detail.className = 'history-detail';
+        detail.textContent = historyReportText(report);
+        view.onclick = function(){ detail.style.display = detail.style.display === 'block' ? 'none' : 'block'; };
+        del.onclick = function(){
+            if(!adminAuthenticated){ alert('Admin Login required to delete history.'); return; }
+            if(confirm('Delete report history for ' + date + '?')){
+                var latest = getHistory(); delete latest[date];
+                localStorage.setItem('finishingLotQIReportHistory', JSON.stringify(latest));
+                renderHistory();
+            }
+        };
+        actions.appendChild(view); actions.appendChild(del);
+        item.appendChild(dateDiv); item.appendChild(summary); item.appendChild(actions); item.appendChild(detail);
+        list.appendChild(item);
+    });
+}
+
+function historyReportText(report){
+    var text = "📅 Daily Finishing QI Report – " + report.date + "\n";
+    if(report.textContent) text += "🎯 " + report.textContent.target + "\n\n";
+    if(report.lotData){
+        text += "Quality Performance by Lot (Defect %):\n\n";
+        report.lotData.forEach(function(item){
+            text += "Lot " + item.lot + " – " + item.percent + "%\n";
+        });
+    }
+    if(report.textContent) text += "\n📌 Action Note:\n" + report.textContent.actionNote;
+    return text;
+}
+
+function openHistoryFromHome(){
+    renderHistory();
+    historyModal.style.display = 'flex';
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init(){
+    loadDailySnapshots();
+    loadMonthlyData();
+    loadMonthlyHistory();
+    bootstrapMonthlyFromLots();
+    saveTodaySnapshot();
+    if(!getActivity().length){
+        pushActivity('System initialized', 'blue');
+        pushActivity('Monthly data loaded', 'green');
+    }
+    updateAllPages();
+    navigateTo('home');
+}
+
+init();
+
+window.navigateTo = navigateTo;
+window.openHistoryFromHome = openHistoryFromHome;
+
+})();
+</script>
+</body>
+</html>

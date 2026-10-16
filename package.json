@@ -1,0 +1,35 @@
+{
+  "name": "daily-finishing-qi-report",
+  "version": "1.0.0",
+  "description": "Daily Finishing QI Report for Colossus Apparel Limited",
+  "main": "main.js",
+  "author": "Fazle Rabbi (拉比)",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win",
+    "build:portable": "electron-builder --win portable",
+    "pack": "electron-packager . DailyFinishingQI --platform=win32 --arch=x64 --overwrite"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.colossus.qireport",
+    "productName": "Daily Finishing QI Report",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "win": {
+      "target": ["nsis", "portable"],
+      "icon": "Colossus.jpeg"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Finishing QI Report"
+    }
+  }
+}
