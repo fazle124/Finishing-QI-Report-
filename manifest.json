@@ -6,7 +6,7 @@
   "orientation": "any",
   "scope": "/",
   "short_name": "QI_Report",
-  "start_url": "Finishing_QI_Report",
+  "start_url": "/Finishing_QI_Report/",
   "theme_color": "#ffffff",
   "id": "com.github.fazle124.qireport",
   "description": "An app to monitor daily finishing quality inspection reports for apparel manufacturing.",
